@@ -2,81 +2,67 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Selección de Trabajador para Charla de Seguridad</title>
+  <title>Selector Aleatorio de Charla</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background: #f4f4f9;
-      padding: 40px;
-    }
-    h1 {
-      color: #333;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      margin: 8px 0;
-      padding: 10px;
-      background: #e0e7ff;
-      border-radius: 8px;
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 24px;
-      border: none;
-      border-radius: 8px;
-      background: #4f46e5;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #4338ca;
+      margin-top: 50px;
     }
     #resultado {
-      margin-top: 30px;
-      font-size: 28px;
-      font-weight: bold;
-      color: #1e293b;
+      margin-top: 20px;
+      font-size: 1.3em;
+      color: darkblue;
     }
   </style>
 </head>
 <body>
-
-  <h1>Lista de Trabajadores</h1>
-  <ul id="lista-trabajadores">
-    <li>Argenys</li>
-    <li>Bronwell</li>
-    <li>Carlos</li>
-    <li>Eliecer</li>
-    <li>Emelda</li>
-    <li>Fabio</li>
-    <li>Francisca</li>
-    <li>Franklin</li>
-    <li>Heima</li>
-    <li>Isabella</li>
-    <li>Manuel</li>
-    <li>Sady</li>
-    <li>Scarleth</li>
-    <li>Stedy</li>
-  </ul>
-
-  <button onclick="seleccionarAleatorio()">Seleccionar Trabajador</button>
-
+  <h1>Selector de Charla</h1>
+  <p id="fecha"></p>
+  <button onclick="seleccionarCharla()">Seleccionar Charla</button>
   <div id="resultado"></div>
 
   <script>
-    function seleccionarAleatorio() {
-      let lista = document.querySelectorAll("#lista-trabajadores li");
-      let indice = Math.floor(Math.random() * lista.length);
-      let trabajador = lista[indice].textContent;
-      document.getElementById("resultado").innerText = "Seleccionado: " + trabajador;
+    // Mostrar fecha y día actual
+    const fechaElemento = document.getElementById("fecha");
+    const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const hoy = new Date();
+    fechaElemento.textContent = hoy.toLocaleDateString("es-ES", opcionesFecha);
+
+    // Función general para leer un archivo de texto y devolver un array de líneas
+    async function leerArchivo(archivo) {
+      const respuesta = await fetch(archivo);
+      const texto = await respuesta.text();
+      return texto.split(/\r?\n/).filter(l => l.trim() !== "");
+    }
+
+    async function seleccionarCharla() {
+      // Verificar día actual
+      const diaSemana = hoy.getDay(); // 0=Domingo, 1=Lunes, 2=Martes, 3=Miércoles...
+      let archivoTemas = "";
+
+      if (diaSemana === 1 || diaSemana === 3) {
+        archivoTemas = "amb.txt";
+      } else {
+        archivoTemas = "sst.txt";
+      }
+
+      try {
+        // Leer temas y personas
+        const listaTemas = await leerArchivo(archivoTemas);
+        const listaPersonas = await leerArchivo("persona.txt");
+
+        // Selección aleatoria
+        const temaAleatorio = listaTemas[Math.floor(Math.random() * listaTemas.length)];
+        const personaAleatoria = listaPersonas[Math.floor(Math.random() * listaPersonas.length)];
+
+        // Mostrar resultado
+        document.getElementById("resultado").innerHTML = 
+          `<b>Tema:</b> ${temaAleatorio}<br><b>Encargado:</b> ${personaAleatoria}`;
+      } catch (error) {
+        document.getElementById("resultado").textContent = "Error cargando archivos: " + error;
+      }
     }
   </script>
-
 </body>
 </html>
-
